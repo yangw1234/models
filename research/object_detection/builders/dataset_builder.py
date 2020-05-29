@@ -92,7 +92,10 @@ def read_dataset(file_read_func, input_files, config,
   if filename_shard_fn:
     filename_dataset = filename_shard_fn(filename_dataset)
 
-  filename_dataset = filename_dataset.repeat(config.num_epochs or None)
+  # we can potentially set config.num_epochs to 1 and disable the checking
+  # in TFDataset by setting from_tf_data_dataset(..., remove_checking=True)
+  # instead of editing this file
+  # filename_dataset = filename_dataset.repeat(config.num_epochs or None)
   records_dataset = filename_dataset.apply(
       tf_data.parallel_interleave(
           file_read_func,

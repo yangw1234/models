@@ -493,16 +493,22 @@ def create_model_fn(detection_model_fn, configs, hparams, use_tpu=False,
       summaries = [] if use_tpu else None
       if train_config.summarize_gradients:
         summaries = ['gradients', 'gradient_norm', 'global_gradient_norm']
-      train_op = slim.optimizers.optimize_loss(
-          loss=total_loss,
-          global_step=global_step,
-          learning_rate=None,
-          clip_gradients=clip_gradients_value,
-          optimizer=training_optimizer,
-          update_ops=detection_model.updates(),
-          variables=trainable_variables,
-          summaries=summaries,
-          name='')  # Preventing scope prefix on all variables.
+      # train_op = slim.optimizers.optimize_loss(
+      #     loss=total_loss,
+      #     global_step=global_step,
+      #     learning_rate=None,
+      #     clip_gradients=clip_gradients_value,
+      #     optimizer=training_optimizer,
+      #     update_ops=detection_model.updates(),
+      #     variables=trainable_variables,
+      #     summaries=summaries,
+      #     name='')  # Preventing scope prefix on all variables.
+
+      ### todo handle clip_gradients_value, update_ops, trainable_variables
+      ## currently it seems there is no way to avoid editing this file
+      from zoo.tfpark import ZooOptimizer
+      training_optimizer = ZooOptimizer(training_optimizer)
+      train_op = training_optimizer.minimize(total_loss)
 
     if mode == tf.estimator.ModeKeys.PREDICT:
       exported_output = exporter_lib.add_output_tensor_nodes(detections)
